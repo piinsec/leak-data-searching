@@ -69,3 +69,13 @@ li {
 .no-result {
   color: #cccccc;
 }
+
+.footer {
+  margin-top: 40px;
+  text-align: center;
+  padding: 15px 0;
+  background-color: #1b1b2f;
+  color: #aaa;
+  font-size: 14px;
+  border-top: 1px solid #333;
+}
