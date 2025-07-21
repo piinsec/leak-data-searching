@@ -11,18 +11,35 @@
     <h1>🔍 Leak Data Search Tool</h1>
     <form id="searchForm">
       <input type="text" name="keyword" id="keyword" placeholder="Enter keyword (e.g. user123 or .gov)" required />
-      <button type="submit">Search</button>
+      <button type="submit" id="searchBtn" disabled>Search</button>
     </form>
+
     <div id="results"></div>
+    <button id="exportBtn" style="display: none;">⬇️ Export Results as .txt</button>
   </div>
 
   <script>
     const form = document.getElementById('searchForm');
+    const keywordInput = document.getElementById('keyword');
+    const searchBtn = document.getElementById('searchBtn');
     const resultsDiv = document.getElementById('results');
+    const exportBtn = document.getElementById('exportBtn');
+    let currentResults = [];
 
+    // Enable search button only when keyword is typed
+    keywordInput.addEventListener('input', () => {
+      const value = keywordInput.value.trim();
+      searchBtn.disabled = value === '';
+      resultsDiv.innerHTML = '';
+      exportBtn.style.display = 'none';
+    });
+
+    // On form submit
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       resultsDiv.innerHTML = "<p>Searching...</p>";
+      exportBtn.style.display = "none";
+      currentResults = [];
 
       const formData = new FormData(form);
       const res = await fetch('/search', {
@@ -48,8 +65,30 @@
         const li = document.createElement('li');
         li.textContent = line;
         ul.appendChild(li);
+        currentResults.push(line);
       });
       resultsDiv.appendChild(ul);
+      exportBtn.style.display = "inline-block";
+    });
+
+    // Export to .txt
+    exportBtn.addEventListener('click', () => {
+      const blob = new Blob([currentResults.join('\n')], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'leak_search_results.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // On page load, clear form + results
+    window.addEventListener('load', () => {
+      form.reset();
+      searchBtn.disabled = true;
+      resultsDiv.innerHTML = "";
+      exportBtn.style.display = "none";
+      currentResults = [];
     });
   </script>
 </body>
