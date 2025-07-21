@@ -12,5 +12,5 @@ pip install -r requirement.txt
 python app.py
 ```
 # Usage
-ကြိုက်နှစ်သက်ရာ `Keyword` ထည့်ပြီး `search` လုပ်နိုင်ပါတယ်။
-
+- ကြိုက်နှစ်သက်ရာ `Keyword` ထည့်ပြီး `search` လုပ်နိုင်ပါတယ်။
+- Browser URL မှာ `localhost` သို့မဟုတ် `server ip` ကိုခေါ်ပြီး အသုံးပြုနိုင်ပါတယ်။
