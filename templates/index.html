@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Leak Data Search Tool</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 Leak Data Search Tool</h1>
+    <form id="searchForm">
+      <input type="text" name="keyword" id="keyword" placeholder="Enter keyword (e.g. user123 or .gov)" required />
+      <button type="submit">Search</button>
+    </form>
+    <div id="results"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const resultsDiv = document.getElementById('results');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      resultsDiv.innerHTML = "<p>Searching...</p>";
+
+      const formData = new FormData(form);
+      const res = await fetch('/search', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+      resultsDiv.innerHTML = "";
+
+      if (data.error) {
+        resultsDiv.innerHTML = `<p class="error">${data.error}</p>`;
+        return;
+      }
+
+      if (data.results.length === 0) {
+        resultsDiv.innerHTML = "<p class='no-result'>No matching data found.</p>";
+        return;
+      }
+
+      const ul = document.createElement('ul');
+      data.results.forEach(line => {
+        const li = document.createElement('li');
+        li.textContent = line;
+        ul.appendChild(li);
+      });
+      resultsDiv.appendChild(ul);
+    });
+  </script>
+</body>
+</html>
