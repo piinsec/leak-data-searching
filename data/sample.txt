@@ -1,0 +1,4 @@
+user1:password1:https://target1.com/login
+user@gmail.com:user123:https://gmail.com
+95911223344:admin123:https://site.com/login
+2345:11223344:https://www.facebook.com/
