@@ -1,99 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Leak Data Search Tool</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-  <div class="container">
-    <h1>🔍 Leak Data Search Tool</h1>
-    <form id="searchForm">
-      <input type="text" name="keyword" id="keyword" placeholder="Enter keyword (e.g. user123 or .gov)" required />
-      <button type="submit" id="searchBtn" disabled>Search</button>
-    </form>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Leak Data Search Tool</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔍 Leak Data Search Tool</h1>
+      <p>ယခု leak data များကို Naz.API ကနေ ရယူထားတာဖြစ်ပါတယ်။</p>
+      <p>Demo version အနေနဲ့ Data line ၁၀၀၀ ထဲကပဲရှာပေးတာဖြစ်ပါတယ်။</p>
+      <form id="searchForm">
+        <input
+          type="text"
+          name="keyword"
+          id="keyword"
+          placeholder="Enter keyword (e.g. user123 or .gov)"
+          required
+        />
+        <button type="submit" id="searchBtn" disabled>Search</button>
+      </form>
 
-    <div id="results"></div>
-    <button id="exportBtn" style="display: none;">⬇️ Export Results as .txt</button>
-  </div>
+    <div style="display: flex; flex-direction: column; align-items: center;">
+      <div id="results"></div>
+      <p id="dfile" style="display: none">Download result as text file.</p>
+      <br />
+      <button id="exportBtn" style="display: none">⬇️ Export</button>
+    </div>
 
-  <script>
-    const form = document.getElementById('searchForm');
-    const keywordInput = document.getElementById('keyword');
-    const searchBtn = document.getElementById('searchBtn');
-    const resultsDiv = document.getElementById('results');
-    const exportBtn = document.getElementById('exportBtn');
-    let currentResults = [];
+    <script>
+      const dfile = document.getElementById("dfile");
+      const form = document.getElementById("searchForm");
+      const keywordInput = document.getElementById("keyword");
+      const searchBtn = document.getElementById("searchBtn");
+      const resultsDiv = document.getElementById("results");
+      const exportBtn = document.getElementById("exportBtn");
+      let currentResults = [];
 
-    // Enable search button only when keyword is typed
-    keywordInput.addEventListener('input', () => {
-      const value = keywordInput.value.trim();
-      searchBtn.disabled = value === '';
-      resultsDiv.innerHTML = '';
-      exportBtn.style.display = 'none';
-    });
-
-    // On form submit
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      resultsDiv.innerHTML = "<p>Searching...</p>";
-      exportBtn.style.display = "none";
-      currentResults = [];
-
-      const formData = new FormData(form);
-      const res = await fetch('/search', {
-        method: 'POST',
-        body: formData
+      // Enable search button only when keyword is typed
+      keywordInput.addEventListener("input", () => {
+        const value = keywordInput.value.trim();
+        searchBtn.disabled = value === "";
+        resultsDiv.innerHTML = "";
+        dfile.style.display = "none";
+        exportBtn.style.display = "none";
       });
 
-      const data = await res.json();
-      resultsDiv.innerHTML = "";
+      // On form submit
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        resultsDiv.innerHTML = "<p>Searching...</p>";
+        dfile.style.display = "none";
+        exportBtn.style.display = "none";
+        currentResults = [];
 
-      if (data.error) {
-        resultsDiv.innerHTML = `<p class="error">${data.error}</p>`;
-        return;
-      }
+        const formData = new FormData(form);
+        const res = await fetch("/search", {
+          method: "POST",
+          body: formData,
+        });
 
-      if (data.results.length === 0) {
-        resultsDiv.innerHTML = "<p class='no-result'>No matching data found.</p>";
-        return;
-      }
+        const data = await res.json();
+        resultsDiv.innerHTML = "";
 
-      const ul = document.createElement('ul');
-      data.results.forEach(line => {
-        const li = document.createElement('li');
-        li.textContent = line;
-        ul.appendChild(li);
-        currentResults.push(line);
+        if (data.error) {
+          resultsDiv.innerHTML = `<p class="error">${data.error}</p>`;
+          return;
+        }
+
+        if (data.results.length === 0) {
+          resultsDiv.innerHTML =
+            "<p class='no-result'>No matching data found.</p>";
+          return;
+        }
+
+        const ul = document.createElement("ul");
+        data.results.forEach((line) => {
+          const li = document.createElement("li");
+          li.textContent = line;
+          ul.appendChild(li);
+          currentResults.push(line);
+        });
+        resultsDiv.appendChild(ul);
+        dfile.style.display = "inline-block";
+        exportBtn.style.display = "inline-block";
       });
-      resultsDiv.appendChild(ul);
-      exportBtn.style.display = "inline-block";
-    });
 
-    // Export to .txt
-    exportBtn.addEventListener('click', () => {
-      const blob = new Blob([currentResults.join('\n')], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'leak_search_results.txt';
-      a.click();
-      URL.revokeObjectURL(url);
-    });
+      // Export to .txt
+      exportBtn.addEventListener("click", () => {
+        const blob = new Blob([currentResults.join("\n")], {
+          type: "text/plain",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "leak_search_results.txt";
+        a.click();
+        URL.revokeObjectURL(url);
+      });
 
-    // On page load, clear form + results
-    window.addEventListener('load', () => {
-      form.reset();
-      searchBtn.disabled = true;
-      resultsDiv.innerHTML = "";
-      exportBtn.style.display = "none";
-      currentResults = [];
-    });
-  </script>
-</body>
+      // On page load, clear form + results
+      window.addEventListener("load", () => {
+        form.reset();
+        searchBtn.disabled = true;
+        resultsDiv.innerHTML = "";
+        exportBtn.style.display = "none";
+        currentResults = [];
+      });
+    </script>
+  </body>
   <footer class="footer">
     <p>&copy; 2025 PiiN Security. All rights reserved.</p>
   </footer>
 </html>
-  
